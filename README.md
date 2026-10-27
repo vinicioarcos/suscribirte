@@ -1,6 +1,6 @@
 # Suscribirte
 
-Aplicación para Vercel y Neon. Incluye cuentas con Better Auth, almacenamiento por usuario, control de versiones para evitar sobrescrituras entre dispositivos, costo diario, valor restante, voz y exportación de calendario y respaldos.
+Aplicación para Vercel y Neon. Incluye cuentas con Better Auth, almacenamiento por usuario, control de versiones para evitar sobrescrituras entre dispositivos, costo diario, valor restante, voz y exportación de calendario y respaldos. La vigencia, los avisos y el costo diario se deciden por fecha y hora, no solo por fecha.
 
 ## Configuración
 
@@ -25,6 +25,14 @@ Desplegado en producción el 26 de octubre de 2026 en https://suscribirte.arcdat
 Verificado en producción: crear cuenta, guardar, conflicto de versión entre dispositivos (409), cerrar sesión, volver a entrar con los datos intactos y aislamiento entre cuentas. Las migraciones se ejecutaron una sola vez; `vercel.json` no las ejecuta en cada build.
 
 Neon crea las variables con el prefijo `SUSCRIBE_`. Por eso `lib/db.js` acepta `DATABASE_URL` o `SUSCRIBE_DATABASE_URL`, y `scripts/migrate.mjs` prefiere la conexión sin agrupar (`SUSCRIBE_DATABASE_URL_UNPOOLED`) para el DDL. Las variables están marcadas como sensibles y no se pueden leer desde la CLI: las migraciones se ejecutan desde el build de Vercel o con la cadena de conexión tomada del panel de Neon.
+
+## Fecha y hora
+
+Cada suscripción admite `startTime` y `endTime` en formato `HH:MM`. Son opcionales: si faltan se interpretan como `00:00`, de modo que los registros anteriores conservan exactamente el mismo comportamiento.
+
+Con `endTime` en `00:00` el período termina al comenzar el día de vencimiento; con `23:59` incluye el día completo. Los días restantes, el estado (vigente, por vencer, vencida, por comenzar), el aviso anticipado, el costo diario y el valor restante se calculan al minuto, y la vista se actualiza cada minuto. Un período puede empezar y terminar el mismo día si la hora de vencimiento es posterior a la de inicio.
+
+Al renovar, el nuevo período arranca en la fecha y hora exactas en que terminó el anterior. La exportación al calendario genera un evento con hora cuando `endTime` no es `00:00`, y un evento de día completo cuando lo es.
 
 ## Limitaciones
 
