@@ -34,6 +34,12 @@ Con `endTime` en `00:00` el período termina al comenzar el día de vencimiento;
 
 Al renovar, el nuevo período arranca en la fecha y hora exactas en que terminó el anterior. La exportación al calendario genera un evento con hora cuando `endTime` no es `00:00`, y un evento de día completo cuando lo es.
 
+## Color de marca
+
+Cada suscripción guarda un `color` en formato `#rrggbb`, que pinta el cuadrado de su tarjeta. Al escribir el nombre se sugiere el color de la marca cuando se reconoce (unas cincuenta: Netflix, Spotify, YouTube, Disney+, HBO Max, Prime Video, Microsoft, Apple, Claro, CNT, Movistar y otras); la sugerencia deja de aplicarse en cuanto eliges un color a mano.
+
+La letra del cuadrado se calcula por luminancia: oscura sobre fondos claros como el amarillo y blanca sobre los oscuros. El campo es opcional y los valores que no sean `#rrggbb` exactos se descartan, tanto en el servidor como al pintar, de modo que los registros anteriores mantienen el cuadrado verde de la app.
+
 ## Limitaciones
 
 
