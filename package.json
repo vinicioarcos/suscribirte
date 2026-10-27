@@ -1,0 +1,1 @@
+{"name":"suscribirte","version":"1.0.0","private":true,"type":"module","scripts":{"build":"next build","dev":"next dev","db:migrate":"node scripts/migrate.mjs","test":"node --test"},"dependencies":{"next":"16.4.3","react":"^19.2.0","react-dom":"^19.2.0","better-auth":"1.7.14","pg":"^8.16.3","zod":"^4.0.0"}}

@@ -1,0 +1,9 @@
+import {getAuth} from '../../../lib/auth.js';
+import {getPool} from '../../../lib/db.js';
+import {collection} from '../../../lib/validation.js';
+export const runtime='nodejs';
+export const dynamic='force-dynamic';
+const json=(v,status=200)=>Response.json(v,{status,headers:{'Cache-Control':'no-store'}});
+async function session(r){return getAuth().api.getSession({headers:r.headers});}
+export async function GET(r){try{const s=await session(r);if(!s)return json({error:'Inicia sesión'},401);const q=await getPool().query('SELECT items,version FROM subscription_collections WHERE user_id=$1',[s.user.id]);return json(q.rows[0]||{items:[],version:0});}catch{return json({error:'No se pudo leer la base de datos.'},503);}}
+export async function PUT(r){if(r.headers.get('origin')!==new URL(r.url).origin)return json({error:'Origen no permitido'},403);try{const s=await session(r);if(!s)return json({error:'Inicia sesión'},401);const raw=await r.text();if(Buffer.byteLength(raw)>300000)return json({error:'Demasiados datos'},413);const parsed=collection.safeParse(JSON.parse(raw));if(!parsed.success)return json({error:'Datos inválidos'},400);const {items,version}=parsed.data;const q=await getPool().query(`WITH changed AS (UPDATE subscription_collections SET items=$2::jsonb,version=version+1,updated_at=now() WHERE user_id=$1 AND version=$3 RETURNING version), created AS (INSERT INTO subscription_collections(user_id,items,version) SELECT $1,$2::jsonb,1 WHERE $3=0 ON CONFLICT DO NOTHING RETURNING version) SELECT version FROM changed UNION ALL SELECT version FROM created`,[s.user.id,JSON.stringify(items),version]);if(!q.rowCount)return json({error:'Los datos cambiaron en otro dispositivo. Recarga antes de editar.'},409);return json({version:q.rows[0].version});}catch{return json({error:'No se guardaron los cambios. Intenta nuevamente.'},503);}}
